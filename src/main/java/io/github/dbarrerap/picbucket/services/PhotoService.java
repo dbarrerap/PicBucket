@@ -2,11 +2,14 @@ package io.github.dbarrerap.picbucket.services;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.mongodb.client.gridfs.model.GridFSFile;
 import io.github.dbarrerap.picbucket.entities.Photo;
 import io.github.dbarrerap.picbucket.repositories.PhotoRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -50,5 +53,17 @@ public class PhotoService {
         photo.setResourceId(resourceId);
 
         return repository.save(photo);
+    }
+
+    public byte[] view(String id) throws IOException {
+        byte[] data = null;
+        Optional<Photo> optional = repository.findById(id);
+        if (optional.isPresent()) {
+            GridFSFile photo = template.findOne(new Query(Criteria.where("_id").is(optional.get().getResourceId())));
+            if (photo != null) {
+                data = template.getResource(photo).getInputStream().readAllBytes();
+            }
+        }
+        return data;
     }
 }
