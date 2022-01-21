@@ -31,7 +31,7 @@ import static java.util.Arrays.stream;
 public class AuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if (request.getServletPath().equals("/api/users/login")) {
+        if (request.getServletPath().equals("/api/users/login") || request.getServletPath().equals("/api/users/refresh")) {
             filterChain.doFilter(request, response);
         } else {
             String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
@@ -45,9 +45,7 @@ public class AuthorizationFilter extends OncePerRequestFilter {
                     String[] roles = decodedJWT.getClaim("roles").asArray(String.class);
                     // Convert Role into SimpleGrantedAuthority
                     Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
-                    stream(roles).forEach(role -> {
-                        authorities.add(new SimpleGrantedAuthority(role));
-                    });
+                    stream(roles).forEach(role -> authorities.add(new SimpleGrantedAuthority(role)));
                     UsernamePasswordAuthenticationToken authenticationToken
                             = new UsernamePasswordAuthenticationToken(email, null, authorities);
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
