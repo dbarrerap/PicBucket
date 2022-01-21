@@ -19,11 +19,13 @@ public class UserService implements IUserService {
 
     @Override
     public User saveUser(User user) {
+        log.info("* Saving user {}", user.getEmail());
         return userRepository.save(user);
     }
 
     @Override
     public Role saveRole(Role role) {
+        log.info("* Saving role {}", role.getName());
         return roleRepository.save(role);
     }
 
@@ -32,17 +34,21 @@ public class UserService implements IUserService {
         User user = userRepository.findByEmail(email);
         Role role = roleRepository.findByName(roleName);
 
+        log.info("* Assigning role {} to user {}", role.getName(), user.getEmail());
+
         user.getRoles().add(role);
         userRepository.save(user);
     }
 
     @Override
     public User getUser(String email) {
+        log.info("* Searching for user {}", email);
         return userRepository.findByEmail(email);
     }
 
     @Override
     public List<User> getUsers() {
+        log.info("* Listing all users.");
         return userRepository.findAll();
     }
 }
