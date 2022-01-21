@@ -4,6 +4,7 @@ import io.github.dbarrerap.picbucket.filter.AuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -24,10 +25,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        AuthFilter filter = new AuthFilter(authenticationManagerBean());
+        filter.setFilterProcessesUrl("/api/users/login");
+
         http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        http.authorizeRequests().anyRequest().permitAll();  // permite acceso a toda la aplicacion
-        http.addFilter(new AuthFilter(authenticationManagerBean()));  // Filtro para autenticar los usuarios registrados
+        http.authorizeRequests().antMatchers(HttpMethod.GET, "/api/picbucket/**").permitAll();
+        http.authorizeRequests().antMatchers(HttpMethod.POST, "/api/picbucket/**").hasAnyAuthority("ROLE_USER");
+        http.authorizeRequests().antMatchers("/api/users/**").hasAnyAuthority("ROLE_ADMIN");
+//        http.authorizeRequests().anyRequest().permitAll();  // permite acceso a toda la aplicacion
+        http.authorizeRequests().anyRequest().authenticated();  // Restringimos el acceso a los demas endpoints
+        http.addFilter(filter);  // Filtro para autenticar los usuarios registrados
     }
 
     @Bean
