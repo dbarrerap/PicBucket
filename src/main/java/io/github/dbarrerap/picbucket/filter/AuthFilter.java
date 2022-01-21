@@ -2,7 +2,9 @@ package io.github.dbarrerap.picbucket.filter;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -17,6 +19,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -52,8 +56,13 @@ public class AuthFilter extends UsernamePasswordAuthenticationFilter {
                 .withExpiresAt(new Date(System.currentTimeMillis() + 30 * 60 * 1000))  // Tiempo de vida mas largo que el de acceso
                 .withIssuer(request.getRequestURL().toString())
                 .sign(algorithm);
-        response.setHeader("access_token", accessToken);
-        response.setHeader("refresh_token", refreshToken);
+//        response.setHeader("access_token", accessToken);
+//        response.setHeader("refresh_token", refreshToken);
+        Map<String, String> token = new HashMap<>();
+        token.put("access_token", accessToken);
+        token.put("refresh_token", refreshToken);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        new ObjectMapper().writeValue(response.getOutputStream(), token);
     }
 
     @Override
